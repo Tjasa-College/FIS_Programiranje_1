@@ -1,0 +1,86 @@
+name: Auto PR from resevanje-nalog to main
+
+on:
+  push:
+    branches:
+      - resevanje-nalog
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const headBranch = 'resevanje-nalog';
+            const baseBranch = 'main';
+
+            // Who to assign/request as reviewer:
+            // Use the person who pushed (most common for your setup).
+            const user = context.actor; 
+
+            // 1) See if an open PR already exists
+            const { data: prs } = await github.rest.pulls.list({
+              owner, repo, state: 'open', base: baseBranch, head: `${owner}:${headBranch}`
+            });
+
+            if (prs.length > 0) {
+              core.info(`PR already open: #${prs[0].number}`);
+              // Optionally refresh assignee/reviewer on each push
+              try {
+                await github.rest.issues.addAssignees({
+                  owner, repo, issue_number: prs[0].number, assignees: [user]
+                });
+              } catch (e) {
+                core.info(`Assignee step skipped: ${e.message}`);
+              }
+              try {
+                await github.rest.pulls.requestReviewers({
+                  owner, repo, pull_number: prs[0].number, reviewers: [user]
+                });
+              } catch (e) {
+                core.info(`Reviewer step skipped: ${e.message}`);
+              }
+              return;
+            }
+
+            // 2) Create a new PR
+            const title = `Auto PR: ${headBranch} → ${baseBranch}`;
+            const body  = [
+              'This PR was opened automatically.',
+              '',
+              '- Source branch: `resevanje-nalog`',
+              '- Target branch: `main`',
+              '',
+              'Please review and merge when ready.'
+            ].join('\n');
+
+            const { data: pr } = await github.rest.pulls.create({
+              owner, repo, title, body, head: headBranch, base: baseBranch, draft: false
+            });
+
+            core.info(`Opened PR #${pr.number}`);
+
+            // 3) Assign and request review from you
+            try {
+              await github.rest.issues.addAssignees({
+                owner, repo, issue_number: pr.number, assignees: [user]
+              });
+            } catch (e) {
+              core.info(`Assignee step skipped: ${e.message}`);
+            }
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner, repo, pull_number: pr.number, reviewers: [user]
+              });
+            } catch (e) {
+              core.info(`Reviewer step skipped: ${e.message}`);
+            }
