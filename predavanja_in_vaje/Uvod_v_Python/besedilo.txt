@@ -1,0 +1,14 @@
+a
+e
+i
+o
+u
+sem datoteka
+1
+2
+3
+4
+5
+6
+dodatno besedilo v datoteki
+Vseh znakov je: 62, vseh besed je: 17
