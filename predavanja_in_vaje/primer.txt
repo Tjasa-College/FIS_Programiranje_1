@@ -1,0 +1,5 @@
+1;Ana;1811 sek;5444 sek;2705 sek;2:46:00 sek
+2;Bine;1519 sek;5746 sek;3037 sek;2:51:42 sek
+3;Cilka;1691 sek;5112 sek;2892 sek;2:41:35 sek
+4;Domen;2026 sek;5304 sek;2791 sek;2:48:41 sek
+5;Eva;1759 sek;5542 sek;2853 sek;2:49:14 sek
